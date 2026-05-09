@@ -25,6 +25,7 @@ class Item(db.Model):
     status = db.Column(db.String(20), default='Lost') 
     date_posted = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # Foreign key to User
+    is_resolved = db.Column(db.Boolean, default=False)
 
 with app.app_context():
     db.create_all()
@@ -96,7 +97,7 @@ def index():
 
 @app.route('/report', methods=['POST', 'GET'])
 def report():
-     request.method == 'POST':
+    if request.method == 'POST':
         title = request.form['title']
         category = request.form['category']
         description = request.form['description']
@@ -121,7 +122,7 @@ def report():
             Item.category == category,
             db.or_(
                 Item.title.ilike(f"%{title}%"),
-                db.literal(title).ilike(db.concat("%", Item.title, "%"))
+                db.literal(title).ilike(db.func.concat("%", Item.title, "%"))
             )
         ).all()
 
@@ -130,7 +131,35 @@ def report():
         else:
             flash("Item reported successfully!", "success")
 
-        return redirect('/')
+@app.route('/delete/<int:item_id>', methods=['POST'])
+def delete_item(item_id):
+    item = Item.query.get_or_404(item_id)
+    
+    # Compare the logged-in user's ID to the item's user_id
+    if session.get('user_id') == item.user_id: 
+        db.session.delete(item)
+        db.session.commit()
+        flash('Item successfully deleted.', 'success')
+    else:
+        flash('You are not authorized to delete this item.', 'danger')
+        
+    return redirect(url_for('index'))
+    
+@app.route('/resolve/<int:item_id>', methods=['POST'])
+def resolve_item(item_id):
+    item = Item.query.get_or_404(item_id)
+    
+    # Check if the logged-in user owns the item
+    if session.get('user_id') == item.user_id:
+        item.is_resolved = True  # Flips the status to True!
+        db.session.commit()
+        flash('Item marked as resolved!', 'success')
+    else:
+        flash('You are not authorized to resolve this item.', 'danger')
+        
+    return redirect(url_for('index'))
+        
+    return redirect('/')
     return render_template('report.html')
 
 if __name__ == "__main__":
