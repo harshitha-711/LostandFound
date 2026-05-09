@@ -90,9 +90,9 @@ def logout():
 def index():
     search_query = request.args.get('search')
     if search_query:
-        items = Item.query.filter(Item.title.contains(search_query)).order_by(Item.date_posted.desc()).all()
+        items = Item.query.filter(Item.title.contains(search_query), Item.is_resolved == False).order_by(Item.date_posted.desc()).all()
     else:
-        items = Item.query.order_by(Item.date_posted.desc()).all()
+        items = Item.query.filter_by(is_resolved=False).order_by(Item.date_posted.desc()).all()
     return render_template('index.html', items=items)
 
 @app.route('/report', methods=['POST', 'GET'])
@@ -130,6 +130,9 @@ def report():
             flash(f"Matching {opposite_status} item detected! Please contact the other user.", "warning")
         else:
             flash("Item reported successfully!", "success")
+    return redirect(url_for('index'))
+    return render_template('report.html')
+
 
 @app.route('/delete/<int:item_id>', methods=['POST'])
 def delete_item(item_id):
@@ -158,9 +161,7 @@ def resolve_item(item_id):
         flash('You are not authorized to resolve this item.', 'danger')
         
     return redirect(url_for('index'))
-        
-    return redirect('/')
-    return render_template('report.html')
 
+    
 if __name__ == "__main__":
     app.run(debug=True)
