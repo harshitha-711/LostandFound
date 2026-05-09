@@ -2,25 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>College Lost & Found</title>
+    <title>BMSCE Lost & Found</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body class="bg-light">
     <nav class="navbar navbar-dark bg-dark mb-4">
         <div class="container">
-            <span class="navbar-brand mb-0 h1">College Lost & Found Portal</span>
+            <span class="navbar-brand mb-0 h1">BMSCE Lost And Found</span>
+            <div>
+                <span class="text-light me-3">Logged in as: {{ session['user_email'] }}</span>
+                <a href="/logout" class="btn btn-sm btn-outline-light">Logout</a>
+            </div>
         </div>
     </nav>
 
     <div class="container">
+        <!-- Flash Messages for Match Notifications -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
         <div class="d-flex justify-content-between align-items-center mb-4">
             <form action="/" method="GET" class="mb-4 d-flex">
-    <input type="text" name="search" class="form-control me-2" placeholder="Search for items (e.g. 'bottle')...">
-    <button type="submit" class="btn btn-outline-primary">Search</button>
-    <a href="/" class="btn btn-outline-secondary ms-2">Reset</a>
-</form>
-            <h2>Recent Items</h2>
-            <a href="/report" class="btn btn-primary">Report New Item</a>
+                <input type="text" name="search" class="form-control me-2" placeholder="Search for items...">
+                <button type="submit" class="btn btn-outline-primary">Search</button>
+                <a href="/" class="btn btn-outline-secondary ms-2">Reset</a>
+            </form>
+            
+            <div>
+                <h2>Recent Items</h2>
+                <a href="/report" class="btn btn-primary">Report New Item</a>
+            </div>
         </div>
 
         <div class="row">
@@ -34,6 +50,15 @@
                         <h5 class="card-title">{{ item.title }}</h5>
                         <h6 class="card-subtitle mb-2 text-muted">{{ item.category }}</h6>
                         <p class="card-text">{{ item.description }}</p>
+                        <hr>
+                        <!-- Claim/Return UI -->
+                        <p class="mb-0 text-muted small">
+                            {% if item.status == 'Found' %}
+                                <strong>Claim this item:</strong> Contact <a href="mailto:{{ item.author.email }}">{{ item.author.email }}</a>
+                            {% else %}
+                                <strong>I found this:</strong> Contact <a href="mailto:{{ item.author.email }}">{{ item.author.email }}</a>
+                            {% endif %}
+                        </p>
                     </div>
                     <div class="card-footer text-muted small">
                         📍 Location: {{ item.location }}
