@@ -96,7 +96,7 @@ def index():
 
 @app.route('/report', methods=['POST', 'GET'])
 def report():
-    if request.method == 'POST':
+     request.method == 'POST':
         title = request.form['title']
         category = request.form['category']
         description = request.form['description']
@@ -111,15 +111,22 @@ def report():
         db.session.commit()
 
         # MATCHING LOGIC: Look for the opposite status in the same category
+       # ENHANCED MATCHING LOGIC
         opposite_status = 'Found' if status == 'Lost' else 'Lost'
+        
+        # This looks for items in the same category where the title 
+        # is either a subset or a superset of the reported item
         matches = Item.query.filter(
             Item.status == opposite_status,
             Item.category == category,
-            Item.title.ilike(f'%{title}%') # Fuzzy search on title
+            db.or_(
+                Item.title.ilike(f"%{title}%"),
+                db.literal(title).ilike(db.concat("%", Item.title, "%"))
+            )
         ).all()
 
         if matches:
-            flash(f"Potential Match! Someone already posted a {opposite_status} item similar to yours. Check the board!", "warning")
+            flash(f"Matching {opposite_status} item detected! Please contact the other user.", "warning")
         else:
             flash("Item reported successfully!", "success")
 

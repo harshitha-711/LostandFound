@@ -42,15 +42,17 @@
         <div class="row">
             {% for item in items %}
             <div class="col-md-4 mb-3">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <span class="badge {% if item.status == 'Found' %}bg-success{% else %}bg-danger{% endif %} mb-2">
-                            {{ item.status }}
-                        </span>
-                        <h5 class="card-title">{{ item.title }}</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">{{ item.category }}</h6>
-                        <p class="card-text">{{ item.description }}</p>
-                        <hr>
+               <div class="card h-100 shadow-sm {% if item.status == 'Found' %}border-success{% else %}border-danger{% endif %}">
+    <div class="card-body">
+        <div class="d-flex justify-content-between">
+            <span class="badge {% if item.status == 'Found' %}bg-success{% else %}bg-danger{% endif %} mb-2">
+                {{ item.status }}
+            </span>
+            <!-- Adding a subtle hint -->
+            <small class="text-primary fw-bold">Check Category: {{ item.category }}</small>
+        </div>
+        <h5 class="card-title text-capitalize">{{ item.title }}</h5>
+        ...
                         <!-- Claim/Return UI -->
                         <p class="mb-0 text-muted small">
                             {% if item.status == 'Found' %}
