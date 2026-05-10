@@ -103,7 +103,7 @@ def report():
         description = request.form['description']
         location = request.form['location']
         status = request.form['status']
-
+            
         new_item = Item(
             title=title, category=category, description=description, 
             location=location, status=status, user_id=session['user_id']
@@ -111,7 +111,7 @@ def report():
         db.session.add(new_item)
         db.session.commit()
 
-        # MATCHING LOGIC: Look for the opposite status in the same category
+       # MATCHING LOGIC: Look for the opposite status in the same category
        # ENHANCED MATCHING LOGIC
         opposite_status = 'Found' if status == 'Lost' else 'Lost'
         
@@ -130,7 +130,7 @@ def report():
             flash(f"Matching {opposite_status} item detected! Please contact the other user.", "warning")
         else:
             flash("Item reported successfully!", "success")
-    return redirect(url_for('index'))
+        return redirect(url_for('index'))
     return render_template('report.html')
 
 
